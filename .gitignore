@@ -1,6 +1,3 @@
-# act bin folder for testing workflows
-*bin
-
 # Local Terraform configuration files
 *.tfstate
 *.tfstate.backup
@@ -87,3 +84,6 @@ collections/ansible_collections/*/*/*.log
 
 # python
 venv
+
+# act bin folder for testing workflows
+*bin
