@@ -29,7 +29,7 @@ jobs:
         run: |
           curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-          tflint terraform/
+          tflint --chdir=terraform/
 
       - name: Setup Python environment
         uses: actions/setup-python@v5
