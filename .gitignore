@@ -1,3 +1,6 @@
+# act bin folder for testing workflows
+*bin
+
 # Local Terraform configuration files
 *.tfstate
 *.tfstate.backup
