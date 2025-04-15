@@ -51,3 +51,42 @@ resource "aws_s3_bucket_public_access_block" "builditall_bucket_block" {
 
 
 ##### MWAA #####
+resource "aws_mwaa_environment" "builditall_mwaa_env" {
+  name               = "${var.project}-${var.env_prefix}-mwaa-environment"
+  airflow_version    = var.airflow_version
+  execution_role_arn = aws_iam_role.builditall_mwaa_role.arn
+  network_configuration {
+    security_group_ids = [aws_security_group.web_sg.id]
+    subnet_ids         = module.vpc.private_subnets
+  }
+
+  source_bucket_arn = aws_s3_bucket.builditall_secure_bucket.arn
+
+  dag_s3_path = var.s3_dags_path
+
+  logging_configuration {
+    dag_processing_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+    scheduler_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+    task_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+    webserver_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+  }
+
+  tags = {
+    Name        = "${var.project}-${var.env_prefix}-mwaa-env"
+    Project     = var.project
+    Terraform   = "true"
+    Environment = var.env_prefix
+  }
+}

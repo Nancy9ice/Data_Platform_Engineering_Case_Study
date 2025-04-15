@@ -44,4 +44,14 @@ variable "private_subnet_cidrs" {
   description = "private subnet CIDR for BuildItAll project"
 }
 
+variable "airflow_version" {
+  type        = string
+  default     = "2.10.5"
+  description = "version for airflow"
+}
 
+variable "s3_dags_path" {
+  type        = string
+  default     = "dags"
+  description = "DAG path in s3 for MWAA"
+}
