@@ -56,4 +56,4 @@ output "mwaa_webserver_url" {
 output "mwaa_execution_role_arn" {
   description = "The ARN of the MWAA IAM role"
   value       = aws_iam_role.builditall_mwaa_role.arn
-} 
+}
