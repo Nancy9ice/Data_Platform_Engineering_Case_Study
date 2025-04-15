@@ -33,7 +33,7 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
         ]
         Effect = "Allow"
         Resource = [
-          "${aws_s3_bucket.builditall_secure_bucket.arn}",
+          aws_s3_bucket.builditall_secure_bucket.arn,
           "${aws_s3_bucket.builditall_secure_bucket.arn}/*"
         ]
       },

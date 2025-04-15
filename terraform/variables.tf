@@ -30,16 +30,19 @@ variable "aws_secret_access_key" {
 }
 
 variable "vpc_cidr" {
+  type        = string
   default     = "10.0.0.0/16"
   description = "VPC CIDR for BuildItAll project"
 }
 
 variable "public_subnet_cidrs" {
+  type        = list(string)
   default     = ["10.0.1.0/24", "10.0.2.0/24"]
   description = "pubic subnet CIDR for BuildItAll project"
 }
 
 variable "private_subnet_cidrs" {
+  type        = list(string)
   default     = ["10.0.101.0/24", "10.0.102.0/24"]
   description = "private subnet CIDR for BuildItAll project"
 }
