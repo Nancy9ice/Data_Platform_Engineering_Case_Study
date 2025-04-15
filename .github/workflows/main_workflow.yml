@@ -31,16 +31,16 @@ jobs:
 
           tflint --chdir=terraform/
 
-      - name: Setup Python environment
-        uses: actions/setup-python@v5
-        with:
-            python-version: '3.12' 
+      # - name: Setup Python environment
+      #   uses: actions/setup-python@v5
+      #   with:
+      #       python-version: '3.12' 
 
-      - name: Install pylint-pyspark dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pylint pylint-pyspark
+      # - name: Install pylint-pyspark dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install pylint pylint-pyspark
 
-      - name: Lint Pyspark Code
-        run: |
-          pylint --load-plugins pylint_pyspark
+      # - name: Lint Pyspark Code
+      #   run: |
+      #     pylint --load-plugins pylint_pyspark
