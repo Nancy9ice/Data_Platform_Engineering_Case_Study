@@ -16,7 +16,7 @@ jobs:
   # This defines the "build" job
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -31,16 +31,16 @@ jobs:
 
           tflint --chdir=terraform/
 
-      # - name: Setup Python environment
-      #   uses: actions/setup-python@v5
-      #   with:
-      #       python-version: '3.12' 
+      - name: Setup Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
 
-      # - name: Install pylint-pyspark dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install pylint pylint-pyspark
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      # - name: Lint Pyspark Code
-      #   run: |
-      #     pylint --load-plugins pylint_pyspark
+      - name: Lint Python Scripts
+        run: |
+          flake8 airflow/
