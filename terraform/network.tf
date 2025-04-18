@@ -6,12 +6,11 @@ module "vpc" {
   name = "${var.project}-${var.env_prefix}-vpc"
   cidr = var.vpc_cidr
 
-  azs             = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
+  azs             = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
   private_subnets = var.private_subnet_cidrs
   public_subnets  = var.public_subnet_cidrs
 
-  enable_nat_gateway = true
-  enable_vpn_gateway = true
+  enable_nat_gateway = true # allow private resource like MWAA to connect to external sources
 
   tags = {
     Name        = "${var.project}-${var.env_prefix}-vpc"
@@ -21,7 +20,7 @@ module "vpc" {
   }
 }
 
-# standard security grou configs 
+# standard security group configs 
 resource "aws_security_group" "web_sg" {
   name        = "${var.project}-${var.env_prefix}-sg"
   description = "Allow HTTP/HTTPS and SSH"

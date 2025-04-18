@@ -47,14 +47,25 @@ variable "private_subnet_cidrs" {
   description = "private subnet CIDR for BuildItAll project"
 }
 
-variable "airflow_version" {
-  type        = string
-  default     = "2.10.5"
-  description = "version for airflow"
-}
+# variable "airflow_version" {
+#   type        = string
+#   default     = "2.10.5"
+#   description = "version for airflow"
+# }
 
-variable "s3_dags_path" {
-  type        = string
-  default     = "dags"
-  description = "DAG path in s3 for MWAA"
+# variable "s3_dags_path" {
+#   type        = string
+#   default     = "dags"
+#   description = "DAG path in s3 for MWAA"
+# }
+
+# variable "builditall_slack_webhook" {
+#   type        = string
+#   description = "slack webhook to builditall infra team"
+# }
+
+variable "alert_email_addresses" {
+  description = "email addresses to send alerts to"
+  type        = list(string)
+  default     = ["bestnyah7@gmail.com"]
 }
