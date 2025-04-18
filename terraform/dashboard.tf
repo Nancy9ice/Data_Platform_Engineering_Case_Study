@@ -60,22 +60,6 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
       },
 
       {
-        type = "metric", x = 12, y = 0, width = 12, height = 6,
-        properties = {
-          title = "Request Volume (PUT, GET, Upload)",
-          view  = "timeSeries",
-          metrics = [
-            ["AWS/S3", "PutRequests", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"],
-            ["AWS/S3", "GetRequests", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"],
-            ["AWS/S3", "BytesUploaded", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
-          ],
-          period = 300,
-          stat   = "Sum",
-          region = var.aws_region
-        }
-      },
-
-      {
         type = "metric", x = 0, y = 6, width = 6, height = 6,
         properties = {
           title = "4xx Errors",

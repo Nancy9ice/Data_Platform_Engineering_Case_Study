@@ -10,6 +10,8 @@ resource "aws_sns_topic_subscription" "builditall_email_alerts" {
   topic_arn = aws_sns_topic.builditall_alerts.arn
   protocol  = "email"
   endpoint  = each.key
+
+  depends_on = [aws_sns_topic.builditall_alerts]
 }
 
 # Alerts 
@@ -65,14 +67,3 @@ resource "aws_cloudwatch_metric_alarm" "builditall_s3_high_latency" {
   alarm_actions     = [aws_sns_topic.builditall_alerts.arn]
 }
 
-# S3 object deletion alert
-resource "aws_s3_bucket_notification" "builditall_object_notifications" {
-  bucket = aws_s3_bucket.builditall_secure_bucket.bucket
-
-  topic {
-    topic_arn = aws_sns_topic.builditall_alerts.arn
-    events    = ["s3:ObjectRemoved:*"]
-  }
-
-  depends_on = [aws_sns_topic_policy.s3_sns_policy]
-}
