@@ -71,3 +71,28 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
     ]
   })
 }
+
+# sns topic policy
+resource "aws_sns_topic_policy" "s3_sns_policy" {
+  arn = aws_sns_topic.builditall_alerts.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowS3Publish"
+        Effect = "Allow"
+        Principal = {
+          Service = "s3.amazonaws.com"
+        }
+        Action   = "SNS:Publish"
+        Resource = aws_sns_topic.builditall_alerts.arn
+        Condition = {
+          ArnLike = {
+            "aws:SourceArn" = aws_s3_bucket.builditall_secure_bucket.arn
+          }
+        }
+      }
+    ]
+  })
+}
