@@ -37,9 +37,9 @@ def read_raw_data(spark, input_path):
     """Read raw data from s3 (input path)"""
     return spark.read.text(input_path)
 
+
 def process_line(line):
-    """
-    Process every single line of raw data:
+    """Process every single line of raw data:
     - Remove the semicolon at the end of the line
     - Split the line by commas to extract fields
     - Convert fields to appropriate data types
@@ -50,7 +50,7 @@ def process_line(line):
 
         subject_id = splitbycomma[0]
         activity_code = splitbycomma[1]
-        timestamp = int(splitbycomma[2]) 
+        timestamp = int(splitbycomma[2])
         x_value = float(splitbycomma[3])
         y_value = float(splitbycomma[4])
         z_value = float(splitbycomma[5])
@@ -58,7 +58,7 @@ def process_line(line):
         return subject_id, activity_code, timestamp, x_value, y_value, z_value
 
     except (IndexError, ValueError) as e:
-        # Handle malformed lines, log the error and return None 
+        # Handle malformed lines, log the error and return None
         logging.warning(f"Skipping malformed line: {line} - Error: {e}")
         return None
 
@@ -105,9 +105,10 @@ def write_data(transformed_data, output_path):
         .parquet(output_path)
 
 
-
 def main():
-    """Main function to orchestrate the ETL process."""
+    """
+    Main function to orchestrate the ETL process
+    """
     spark = create_spark_session()
     logger = configure_logging()
     schema = define_schema()
