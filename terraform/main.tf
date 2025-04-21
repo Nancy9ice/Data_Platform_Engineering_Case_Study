@@ -62,42 +62,50 @@ resource "aws_s3_bucket_metric" "builditall_request_metrics" {
 
 
 ##### MWAA #####
-# resource "aws_mwaa_environment" "builditall_mwaa_env" {
-#   name               = "${var.project}-${var.env_prefix}-mwaa-environment"
-#   airflow_version    = var.airflow_version
-#   execution_role_arn = aws_iam_role.builditall_mwaa_role.arn
-#   network_configuration {
-#     security_group_ids = [aws_security_group.web_sg.id]
-#     subnet_ids         = module.vpc.private_subnets
-#   }
+resource "aws_mwaa_environment" "builditall_mwaa_env" {
+  name               = "${var.project}-${var.env_prefix}-mwaa-environment"
+  airflow_version    = var.airflow_version
+  execution_role_arn = aws_iam_role.builditall_mwaa_role.arn
+  network_configuration {
+    security_group_ids = [aws_security_group.web_sg.id]
+    subnet_ids         = module.vpc.private_subnets
+  }
 
-#   source_bucket_arn = aws_s3_bucket.builditall_secure_bucket.arn
+  source_bucket_arn = aws_s3_bucket.builditall_secure_bucket.arn
 
-#   dag_s3_path = var.s3_dags_path
+  dag_s3_path = var.s3_dags_path
 
-#   logging_configuration {
-#     dag_processing_logs {
-#       log_level = "INFO"
-#       enabled   = true
-#     }
-#     scheduler_logs {
-#       log_level = "INFO"
-#       enabled   = true
-#     }
-#     task_logs {
-#       log_level = "INFO"
-#       enabled   = true
-#     }
-#     webserver_logs {
-#       log_level = "INFO"
-#       enabled   = true
-#     }
-#   }
+  # airflow configs
+  airflow_configuration_options = {
+    "core.default_task_retries"     = 5
+    "core.parallelism"              = 10
+    "celery.worker_autoscale"       = "10,10"
+    "webserver.default_ui_timezone" = "Europe/Stockholm"
+  }
 
-#   tags = {
-#     Name        = "${var.project}-${var.env_prefix}-mwaa-env"
-#     Project     = var.project
-#     Terraform   = "true"
-#     Environment = var.env_prefix
-#   }
-# }
+  logging_configuration {
+    dag_processing_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+    scheduler_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+    task_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+    webserver_logs {
+      log_level = "INFO"
+      enabled   = true
+    }
+  }
+
+  tags = {
+    Name        = "${var.project}-${var.env_prefix}-mwaa-env"
+    Project     = var.project
+    Terraform   = "true"
+    Environment = var.env_prefix
+  }
+}

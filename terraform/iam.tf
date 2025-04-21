@@ -9,14 +9,14 @@ resource "aws_iam_role" "builditall_mwaa_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "airflow.amazonaws.com"
+          Service = "airflow-env.amazonaws.com"
         }
       }
     ]
   })
 }
 
-# policies for S3 and EMR to mwaa_role
+# policies for S3, EMR, and SQS to mwaa_role
 resource "aws_iam_role_policy" "builditall_mwaa_policy" {
   name = "${var.project}-${var.env_prefix}-mwaa-policy"
   role = aws_iam_role.builditall_mwaa_role.id
@@ -64,6 +64,34 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Sid    = "GetAccountPublicAccessBlock"
+        Effect = "Allow"
+        Action = [
+          "s3:GetAccountPublicAccessBlock"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "GetBucketPublicAccessBlock"
+        Effect = "Allow"
+        Action = [
+          "s3:GetBucketPublicAccessBlock"
+        ]
+        Resource = aws_s3_bucket.builditall_secure_bucket.arn
+      },
+      {
+        Sid = "SQSAccess"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:ListQueues"
         ]
         Effect   = "Allow"
         Resource = "*"

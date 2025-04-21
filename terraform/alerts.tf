@@ -24,9 +24,9 @@ resource "aws_cloudwatch_metric_alarm" "builditall_s3_bucket_4xx_errors" {
   evaluation_periods  = 1
   metric_name         = "4xxErrors"
   namespace           = "AWS/S3"
-  period              = 300
+  period              = 60
   statistic           = "Sum"
-  threshold           = 10
+  threshold           = 1
   dimensions = {
     BucketName = aws_s3_bucket.builditall_secure_bucket.bucket
   }
