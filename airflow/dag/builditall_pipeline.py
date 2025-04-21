@@ -20,7 +20,6 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 
 import boto3
-import uuid
 import logging
 from datetime import timedelta
 
@@ -179,3 +178,4 @@ with DAG(
     
     # Set task dependencies
     create_emr_cluster >> generate_data >> submit_spark_job >> wait_for_spark_job >> store_results_task >> terminate_emr_cluster
+    
