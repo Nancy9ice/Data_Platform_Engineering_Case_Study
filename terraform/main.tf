@@ -76,6 +76,7 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
   dag_s3_path = var.s3_dags_path
 
   # airflow configs
+  webserver_access_mode = "PUBLIC_ONLY"
   airflow_configuration_options = {
     "core.default_task_retries"     = 5
     "core.parallelism"              = 10
