@@ -1,1 +1,14 @@
 flake8==7.2.0
+apache-airflow-providers-amazon>=2.6.0
+boto3>=1.26.0
+
+# Apache Spark Providers
+apache-airflow-providers-apache-spark>=4.0.0
+
+# Additional dependencies
+pandas>=1.5.1
+pytz>=2022.6
+marshmallow>=3.18.0
+marshmallow-enum>=1.5.1
+pydantic>=1.10.2
+sqlalchemy<2.0.0
