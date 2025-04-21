@@ -128,7 +128,7 @@ with DAG(
     )
     
     
-    # Step 4: Submit Spark job for aggregations
+    # Step 3: Submit Spark job for aggregations
     SPARK_STEPS = [
         {
             'Name': 'Run Data Aggregation',
@@ -156,7 +156,7 @@ with DAG(
         steps=SPARK_STEPS,
     )
     
-    # Step 5: Wait for Spark job to complete
+    # Step 4: Wait for Spark job to complete
     wait_for_spark_job = EmrStepSensor(
         task_id='wait_for_spark_job',
         job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster') }}",
@@ -164,13 +164,13 @@ with DAG(
         aws_conn_id='aws_default',
     )
     
-    # Stap 6: Store results
+    # Stap 5: Store results
     store_results_task = PythonOperator(
         task_id='store_results',
         python_callable=store_results,
     )
     
-    # Step 7: Terminate the EMR cluster
+    # Step 6: Terminate the EMR cluster
     terminate_emr_cluster = EmrTerminateJobFlowOperator(
         task_id='terminate_emr_cluster',
         job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster') }}",
