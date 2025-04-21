@@ -6,24 +6,20 @@ import logging
 
 
 def create_spark_session():
-    """start Spark session."""
+    """Start Spark session"""
+    logging.info("Starting Spark session")
     spark = SparkSession.builder \
         .appName("BuiltitAll Data Processing") \
         .getOrCreate()
     spark.sparkContext.setLogLevel('WARN')
+    logging.info("Spark session started successfully.")
     return spark
 
 
-def configure_logging():
-    """logging for the ETL process."""
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    return logger
-
-
 def define_schema():
-    """Define schema for the sensor data processing"""
-    return StructType([
+    """Define schema for the sensor data processing."""
+    logging.info("Defining schema for the sensor data")
+    schema = StructType([
         StructField("subject_id", StringType(), nullable=False),
         StructField("activity_code", StringType(), nullable=False),
         StructField("timestamp", LongType(), nullable=False),
@@ -31,11 +27,16 @@ def define_schema():
         StructField("y_value", DoubleType(), nullable=True),
         StructField("z_value", DoubleType(), nullable=True)
     ])
+    logging.info("Schema defined successfully")
+    return schema
 
 
 def read_raw_data(spark, input_path):
-    """Read raw data from s3 (input path)"""
-    return spark.read.text(input_path)
+    """Read raw data from s3 (input path)."""
+    logging.info(f"Reading raw data from input path: {input_path}")
+    raw_data = spark.read.text(input_path)
+    logging.info("raw data read successfully.")
+    return raw_data
 
 
 def process_line(line):
@@ -69,10 +70,12 @@ def process_raw_data(raw_data, schema):
     - Process each line to extract values
     - Convert them to the appropriate data types
     """
-    # Process each line to extract values
-    return raw_data.rdd.map(
+    logging.info("Processing raw data")
+    processed_data = raw_data.rdd.map(
         lambda row: process_line(row.value)
     ).toDF(schema)
+    logging.info("raw data processed successfully")
+    return processed_data
 
 
 def transform_data(processed_data):
@@ -81,7 +84,8 @@ def transform_data(processed_data):
     - device_type column: type of device (phone or watch)
     - sensor_type column: type of sensor (accelerometer or gyroscope)
     """
-    return processed_data \
+    logging.info("Transforming processed data")
+    transformed_data = processed_data \
         .withColumn("input_file", input_file_name()) \
         .withColumn(
             "device_type",
@@ -95,44 +99,15 @@ def transform_data(processed_data):
                 col("input_file").contains("accel"), "accelerometer"
             ).otherwise("gyroscope")
         )
+    logging.info("Processed data transformed successfully")
+    return transformed_data
 
 
 def write_data(transformed_data, output_path):
-    """Write the transformed data to s3 (output path) in Parquet format."""
+    """Write the transformed data to s3 (output path) in Parquet format"""
+    logging.info(f"Writing transformed data to output path: {output_path}")
     transformed_data.write \
         .partitionBy("subject_id") \
         .mode("overwrite") \
         .parquet(output_path)
-
-
-def main():
-    """
-    Main function to orchestrate the ETL process
-    """
-    spark = create_spark_session()
-    logger = configure_logging()
-    schema = define_schema()
-
-    input_path = "/data/raw/*/*.txt"
-    output_path = "/data/processed/"
-
-    try:
-        logger.info("Starting ETL process for sensor data")
-
-        raw_data = read_raw_data(spark, input_path)
-        processed_data = process_raw_data(raw_data, schema)
-        transformed_data = transform_data(processed_data)
-        write_data(transformed_data, output_path)
-
-        logger.info("ETL process completed successfully!")
-
-    except Exception as e:
-        logger.error(f"Error in ETL process: {str(e)}")
-        raise e
-
-    finally:
-        spark.stop()
-
-
-# if __name__ == "__main__":
-#     main()
+    logging.info("Transformed data written successfully")
