@@ -127,7 +127,7 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
 
   logging_configuration {
     dag_processing_logs {
-      log_level = "INFO"
+      log_level = "DEBUG"
       enabled   = true
     }
     scheduler_logs {
@@ -135,16 +135,16 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
       enabled   = true
     }
     task_logs {
-      log_level = "INFO"
+      log_level = "WARNING"
       enabled   = true
     }
     webserver_logs {
-      log_level = "INFO"
+      log_level = "ERROR"
       enabled   = true
     }
     worker_logs {
       enabled   = true
-      log_level = "INFO"
+      log_level = "CRITICAL"
     }
   }
 
