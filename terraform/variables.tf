@@ -55,9 +55,40 @@ variable "airflow_version" {
 
 variable "s3_dags_path" {
   type        = string
-  default     = "dags"
-  description = "DAG path in s3 for MWAA"
+  default     = "mwaa/dags/"
+  description = "DAG path in S3 for MWAA"
 }
+
+variable "plugins_s3_path" {
+  type        = string
+  default     = "mwaa/plugins/"
+  description = "Plugins path in S3 for MWAA"
+}
+
+variable "requirements_s3_path" {
+  type        = string
+  default     = "mwaa/requirements.txt"
+  description = "Requirements path in S3 for MWAA"
+}
+
+variable "spark_raw_data_path" {
+  type        = string
+  default     = "builditall_test/raw_data/"
+  description = "Path for spark raw data"
+}
+
+variable "spark_log_data_path" {
+  type        = string
+  default     = "builditall_test/logs/"
+  description = "Path for spark logs data"
+}
+
+variable "spark_processed_data_path" {
+  type        = string
+  default     = "builditall_test/processed_data/"
+  description = "Path for spark processed data"
+}
+
 
 variable "alert_email_addresses" {
   description = "email addresses to send alerts to"

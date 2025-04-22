@@ -1,6 +1,11 @@
 resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
   dashboard_name = "${var.project}-${var.env_prefix}-MonitoringDashboard"
 
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket,
+    aws_mwaa_environment.builditall_mwaa_env
+  ]
+
   dashboard_body = jsonencode({
     widgets = [
       {
@@ -11,7 +16,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "BucketSizeBytes", "BucketName", "builditall-prod-bucket-7efa8d0a", "StorageType", "StandardStorage"]
+            ["AWS/S3", "BucketSizeBytes", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "StorageType", "StandardStorage"]
           ],
           period = 86400,
           region = "eu-north-1",
@@ -28,7 +33,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "NumberOfObjects", "BucketName", "builditall-prod-bucket-7efa8d0a", "StorageType", "AllStorageTypes"]
+            ["AWS/S3", "NumberOfObjects", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "StorageType", "AllStorageTypes"]
           ],
           period = 86400,
           region = "eu-north-1",
@@ -45,7 +50,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "DeleteRequests", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }]
+            ["AWS/S3", "DeleteRequests", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
           ],
           period = 300,
           region = "eu-north-1",
@@ -62,7 +67,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "PostRequests", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }]
+            ["AWS/S3", "PostRequests", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket]
           ],
           period = 300,
           region = "eu-north-1",
@@ -79,7 +84,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "4xxErrors", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }]
+            ["AWS/S3", "4xxErrors", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
           ],
           period = 300,
           region = "eu-north-1",
@@ -102,7 +107,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "5xxErrors", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }]
+            ["AWS/S3", "5xxErrors", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
           ],
           period = 300,
           region = "eu-north-1",
@@ -125,7 +130,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "BytesUploaded", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }]
+            ["AWS/S3", "BytesUploaded", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
           ],
           period = 300,
           region = "eu-north-1",
@@ -142,7 +147,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "BytesDownloaded", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }]
+            ["AWS/S3", "BytesDownloaded", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
           ],
           period = 300,
           region = "eu-north-1",
@@ -159,8 +164,8 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/S3", "FirstByteLatency", "BucketName", "builditall-prod-bucket-7efa8d0a", "FilterId", "EntireBucket", { region = "eu-north-1" }],
-            [".", "TotalRequestLatency", ".", ".", ".", ".", { region = "eu-north-1" }]
+            ["AWS/S3", "FirstByteLatency", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"],
+            ["AWS/S3", "TotalRequestLatency", "BucketName", aws_s3_bucket.builditall_secure_bucket.bucket, "FilterId", "EntireBucket"]
           ],
           period = 300,
           region = "eu-north-1",
@@ -177,7 +182,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/MWAA", "DAGsRunning", "EnvironmentName", "builditall-prod-mwaa-environment", { region = "eu-north-1" }]
+            ["AWS/MWAA", "DAGsRunning", "EnvironmentName", aws_mwaa_environment.builditall_mwaa_env.name]
           ],
           period = 300,
           region = "eu-north-1",
@@ -194,7 +199,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/MWAA", "TaskInstancesSucceeded", "EnvironmentName", "builditall-prod-mwaa-environment"]
+            ["AWS/MWAA", "TaskInstancesSucceeded", "EnvironmentName", aws_mwaa_environment.builditall_mwaa_env.name]
           ],
           period = 300,
           region = "eu-north-1",
@@ -211,7 +216,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/MWAA", "TaskInstancesFailed", "EnvironmentName", "builditall-prod-mwaa-environment", { region = "eu-north-1" }]
+            ["AWS/MWAA", "TaskInstancesFailed", "EnvironmentName", aws_mwaa_environment.builditall_mwaa_env.name]
           ],
           period = 300,
           region = "eu-north-1",
@@ -228,7 +233,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/MWAA", "SchedulerLag", "EnvironmentName", "builditall-prod-mwaa-environment", { region = "eu-north-1" }]
+            ["AWS/MWAA", "SchedulerLag", "EnvironmentName", aws_mwaa_environment.builditall_mwaa_env.name]
           ],
           period = 300,
           region = "eu-north-1",
@@ -251,7 +256,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/MWAA", "SchedulerTasks", "EnvironmentName", "builditall-prod-mwaa-environment", { region = "eu-north-1" }]
+            ["AWS/MWAA", "SchedulerTasks", "EnvironmentName", aws_mwaa_environment.builditall_mwaa_env.name]
           ],
           period = 300,
           region = "eu-north-1",
@@ -268,7 +273,7 @@ resource "aws_cloudwatch_dashboard" "builditall_dashboard" {
         type   = "metric",
         properties = {
           metrics = [
-            ["AWS/MWAA", "WebServerLatency", "EnvironmentName", "builditall-prod-mwaa-environment", { region = "eu-north-1" }]
+            ["AWS/MWAA", "WebServerLatency", "EnvironmentName", aws_mwaa_environment.builditall_mwaa_env.name]
           ],
           period = 300,
           region = "eu-north-1",
