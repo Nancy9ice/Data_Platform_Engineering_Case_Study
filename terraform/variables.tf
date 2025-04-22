@@ -73,19 +73,19 @@ variable "requirements_s3_path" {
 
 variable "spark_raw_data_path" {
   type        = string
-  default     = "builditall_test/raw_data/"
+  default     = "builditall/raw_data/"
   description = "Path for spark raw data"
 }
 
 variable "spark_log_data_path" {
   type        = string
-  default     = "builditall_test/logs/"
+  default     = "builditall/logs/"
   description = "Path for spark logs data"
 }
 
 variable "spark_processed_data_path" {
   type        = string
-  default     = "builditall_test/processed_data/"
+  default     = "builditall/processed_data/"
   description = "Path for spark processed data"
 }
 
