@@ -13,7 +13,6 @@ import logging
 from datetime import timedelta
 
 import boto3
-from pyspark import run_etl
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -80,7 +79,7 @@ def store_results(**kwargs):
 
     try:
         response = s3_client.list_objects_v2(
-            Bucket="<TAKE_BUCKET_FROM_NANCY>",
+            Bucket="buildall-airflow-assets",
             Prefix="results/",
         )
 
@@ -114,16 +113,10 @@ with DAG(
         aws_conn_id="aws_default",
     )
 
-    # Step 2: Generate unique test data
-    run_etl = PythonOperator(
-        task_id="run_etl",
-        python_callable=run_etl,
-    )
-
-    # Step 3: Submit Spark job for aggregations
+    # Step 3: Submit Spark job for sensor data processing
     SPARK_STEPS = [
         {
-            "Name": "Run Data Aggregation",
+            "Name": "Process Sensor Data",
             "ActionOnFailure": "CONTINUE",
             "HadoopJarStep": {
                 "Jar": "command-runner.jar",
@@ -138,8 +131,7 @@ with DAG(
                     "--conf",
                     "spark.shuffle.service.enabled=true",
                     "s3://buildall-airflow-assets/scripts/aggregate_data.py",
-                    '{{ task_instance.xcom_pull(task_ids="generate_data", '
-                    'key="test_data_path") }}',
+                    "s3://buildall-airflow-assets/input/sensor_data/",
                     "s3://buildall-airflow-assets/results/",
                 ],
             },
@@ -171,6 +163,7 @@ with DAG(
     store_results_task = PythonOperator(
         task_id="store_results",
         python_callable=store_results,
+        provide_context=True,
     )
 
     # Step 6: Terminate the EMR cluster
@@ -185,7 +178,6 @@ with DAG(
     # Set task dependencies
     (
         create_emr_cluster
-        >> run_etl
         >> submit_spark_job
         >> wait_for_spark_job
         >> store_results_task

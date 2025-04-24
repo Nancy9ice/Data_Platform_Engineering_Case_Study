@@ -87,3 +87,5 @@ venv
 
 # act bin folder for testing workflows
 *bin
+
+.DS_Store
