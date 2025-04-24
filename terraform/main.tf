@@ -1,3 +1,23 @@
+# add all the variable setup here.
+data "template_file" "mwaa_startup_script" {
+  template = <<-EOT
+    #!/bin/bash
+    echo "Setting Airflow variables..."
+
+    airflow variables set ENVIRONMENT "${var.env_prefix}"
+    airflow variables set PROJECT_NAME "${var.project}"
+
+    echo "Startup script done!!."
+  EOT
+
+  vars = {
+    env_prefix = var.env_prefix
+    project    = var.project
+    s3_bucket  = aws_s3_bucket.builditall_secure_bucket.id
+    mwaa_role  = aws_iam_role.builditall_mwaa_role.arn
+  }
+}
+
 # create random id for bucket namimg to ensure 
 # global bucket uniqueness
 resource "random_id" "bucket_suffix" {
@@ -65,19 +85,43 @@ resource "aws_s3_object" "mwaa_dags_folder" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
   key     = var.s3_dags_path
   content = ""
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket,
+  ]
 }
 
 resource "aws_s3_object" "mwaa_plugins_folder" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
   key     = var.plugins_s3_path
   content = ""
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket
+  ]
 }
 
 resource "aws_s3_object" "mwaa_requirements_file" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
   key     = var.requirements_s3_path
   content = "pandas"
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket
+  ]
 }
+
+resource "aws_s3_object" "mwaa_startup_script" {
+  bucket       = aws_s3_bucket.builditall_secure_bucket.bucket
+  key          = var.startup_script_s3_path
+  content      = data.template_file.mwaa_startup_script.rendered
+  content_type = "text/x-shellscript"
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket,
+    aws_iam_role.builditall_mwaa_role
+  ]
+}
+
 
 # more folders for data processing
 resource "aws_s3_object" "spark_raw_folder" {
@@ -111,9 +155,11 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
 
   source_bucket_arn = aws_s3_bucket.builditall_secure_bucket.arn
 
-  dag_s3_path          = var.s3_dags_path
-  plugins_s3_path      = var.plugins_s3_path
-  requirements_s3_path = var.requirements_s3_path
+  dag_s3_path            = var.s3_dags_path
+  plugins_s3_path        = var.plugins_s3_path
+  requirements_s3_path   = var.requirements_s3_path
+  startup_script_s3_path = var.startup_script_s3_path
+
 
   # airflow configs
   webserver_access_mode = "PUBLIC_ONLY"
@@ -153,6 +199,7 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
     aws_s3_object.mwaa_dags_folder,
     aws_s3_object.mwaa_plugins_folder,
     aws_s3_object.mwaa_requirements_file,
+    aws_s3_object.mwaa_startup_script,
     # module.vpc.nat_gateway_ids,
     # module.vpc.private_subnets
   ]

@@ -71,6 +71,12 @@ variable "requirements_s3_path" {
   description = "Requirements path in S3 for MWAA"
 }
 
+variable "startup_script_s3_path" {
+  type        = string
+  default     = "mwaa/startup.sh"
+  description = "Startiup script to setup airflow env"
+}
+
 variable "spark_raw_data_path" {
   type        = string
   default     = "builditall/raw_data/"
