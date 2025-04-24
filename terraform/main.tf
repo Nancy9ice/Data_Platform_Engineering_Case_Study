@@ -2,7 +2,7 @@
 data "template_file" "mwaa_startup_script" {
   template = <<-EOT
     #!/bin/bash
-    echo "Setting Airflow variables..."
+    echo "Setting Airflow variables."
 
     airflow variables set ENVIRONMENT "${var.env_prefix}"
     airflow variables set PROJECT_NAME "${var.project}"
