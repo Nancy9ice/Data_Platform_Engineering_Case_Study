@@ -13,8 +13,6 @@ import logging
 from datetime import timedelta
 
 import boto3
-
-from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.emr import (
     EmrAddStepsOperator,
@@ -23,6 +21,8 @@ from airflow.providers.amazon.aws.operators.emr import (
 )
 from airflow.providers.amazon.aws.sensors.emr import EmrStepSensor
 from airflow.utils.dates import days_ago
+
+from airflow import DAG
 
 # Default arguments
 default_args = {
