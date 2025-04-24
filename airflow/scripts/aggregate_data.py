@@ -2,6 +2,15 @@
 import logging
 import sys
 
+
+from ..pyspark_job.etl_job import (
+    create_spark_session,
+    define_schema,
+    read_raw_data,
+    process_raw_data,
+    transform_data,
+    write_data
+)
 from pyspark.sql import SparkSession
 
 # Configure logging
@@ -15,28 +24,23 @@ def main():
     """
     Main function to run Spark aggregation job
     """
-    # Validate command line arguments
+    logging.basicConfig(level=logging.INFO)
+
+    # Check command line arguments
     if len(sys.argv) != 3:
-        logger.error("Usage: aggregate_data.py <input_path> <output_path>")
+        logging.error("Usage: aggregate_data.py <input_path> <output_path>")
         sys.exit(1)
 
-    # Get input and output paths from command line arguments
     input_path = sys.argv[1]
     output_path = sys.argv[2]
 
-    logger.info(
-        f"Starting Spark job with input: {input_path}"
-        f"and output: {output_path}"
-    )
-    # Initialize Spark session
-    spark = (
-        SparkSession.builder.appName("BuildAll Data Aggregation")
-        .config("spark.sql.warehouse.dir", "/tmp/spark-warehouse")
-        .config("spark.executor.memory", "2g")
-        .config("spark.driver.memory", "2g")
-        .enableHiveSupport()
-        .getOrCreate()
-    )
+    # Execute the processing pipeline
+    spark = create_spark_session()
+    schema = define_schema()
+    raw_data = read_raw_data(spark, input_path)
+    processed_data = process_raw_data(raw_data, schema)
+    transformed_data = transform_data(processed_data)
+    write_data(transformed_data, output_path)
 
     try:
         # TODO:
