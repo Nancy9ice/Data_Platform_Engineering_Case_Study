@@ -2,16 +2,16 @@
 import logging
 import sys
 
+from pyspark.sql import SparkSession
 
 from ..pyspark_job.etl_job import (
     create_spark_session,
     define_schema,
-    read_raw_data,
     process_raw_data,
+    read_raw_data,
     transform_data,
-    write_data
+    write_data,
 )
-from pyspark.sql import SparkSession
 
 # Configure logging
 logging.basicConfig(
