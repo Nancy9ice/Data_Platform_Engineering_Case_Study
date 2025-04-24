@@ -11,7 +11,7 @@ from pyspark.sql.types import (
 )
 
 
-def main():
+def run_etl():
     """Main function to execute the ETL process."""
     # Start Spark Session
     spark = SparkSession.builder.appName(
@@ -107,7 +107,3 @@ def process_line(line):
     except (IndexError, ValueError) as e:
         logging.warning(f"Skipping malformed line: {line} - Error: {e}")
         return None
-
-
-if __name__ == "__main__":
-    main()

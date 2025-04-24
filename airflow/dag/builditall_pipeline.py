@@ -13,6 +13,7 @@ import logging
 from datetime import timedelta
 
 import boto3
+from pyspark import run_etl
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -70,11 +71,6 @@ JOB_FLOW_OVERRIDES = {
 }
 
 
-# Generate unique test data function
-def generate_data(**kwargs):
-    pass
-
-
 # Store results in S3 (verification step)
 def store_results(**kwargs):
     """
@@ -119,9 +115,9 @@ with DAG(
     )
 
     # Step 2: Generate unique test data
-    generate_data = PythonOperator(
-        task_id="generate_data",
-        python_callable=generate_data,
+    run_etl = PythonOperator(
+        task_id="run_etl",
+        python_callable=run_etl,
     )
 
     # Step 3: Submit Spark job for aggregations
@@ -189,7 +185,7 @@ with DAG(
     # Set task dependencies
     (
         create_emr_cluster
-        >> generate_data
+        >> run_etl
         >> submit_spark_job
         >> wait_for_spark_job
         >> store_results_task
