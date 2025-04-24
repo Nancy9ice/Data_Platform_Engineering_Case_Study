@@ -18,6 +18,7 @@ jobs:
   terraform:
     name: "Terraform Plan/Apply"
     runs-on: ubuntu-latest
+    environment: production
     defaults:
       run:
         working-directory: ./terraform  
