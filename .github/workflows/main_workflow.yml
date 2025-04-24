@@ -93,7 +93,7 @@ jobs:
       # Lints the Python scripts
       - name: Lint Python Scripts
         run: |
-          flake8
+          flake8 .
         working-directory: ./airflow
 
   # This defines the "deploy" job
