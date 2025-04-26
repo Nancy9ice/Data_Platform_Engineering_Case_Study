@@ -1,40 +1,20 @@
-"""
-BuildAll Case Study - Spark Processing DAG
-This DAG implements the complete flow shown in the diagram:
-1. Creates a temporary Spark cluster on EMR
-2. Generates test data
-3. Stores records in S3
-4. Runs aggregations
-5. Stores results in S3
-6. Destroys the cluster
-"""
+from datetime import datetime
 
-import logging
-from datetime import timedelta
-
-import boto3
-from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.emr import (
     EmrAddStepsOperator,
     EmrCreateJobFlowOperator,
     EmrTerminateJobFlowOperator,
 )
 from airflow.providers.amazon.aws.sensors.emr import EmrStepSensor
-from airflow.utils.dates import days_ago
 
 from airflow import DAG
 
-# Default arguments
-default_args = {
-    "owner": "buildall",
-    "depends_on_past": False,
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(minutes=5),
-}
+# INPUT_PATH: Path to the raw sensor data stored in an S3 bucket
+# OUTPUT_PATH: Path to store the processed and transformed data in an S3 bucket
+INPUT_PATH = "s3://your-bucket-name/input-data/"
+OUTPUT_PATH = "s3://your-bucket-name/processed-data/"
 
-# EMR cluster configuration
+
 JOB_FLOW_OVERRIDES = {
     "Name": "BuildAll-Temporary-Spark-Cluster",
     "ReleaseLabel": "emr-6.9.0",
@@ -61,7 +41,7 @@ JOB_FLOW_OVERRIDES = {
     },
     "JobFlowRole": "EMR_EC2_DefaultRole",
     "ServiceRole": "EMR_DefaultRole",
-    "LogUri": "s3://buildall-airflow-assets/emr-logs/",
+    "LogUri": "s3://builditall/logs/",
     "VisibleToAllUsers": True,
     "Tags": [
         {"Key": "Project", "Value": "BuildAll"},
@@ -70,116 +50,80 @@ JOB_FLOW_OVERRIDES = {
 }
 
 
-# Store results in S3 (verification step)
-def store_results(**kwargs):
-    """
-    Verify results exist in S3 and log the output
-    """
-    s3_client = boto3.client("s3")
-
-    try:
-        response = s3_client.list_objects_v2(
-            Bucket="buildall-airflow-assets",
-            Prefix="results/",
-        )
-
-        if "Contents" in response:
-            result_files = [item["Key"] for item in response["Contents"]]
-            logging.info(f"Results stored in S3: {result_files}")
-            return True
-        else:
-            logging.warning("No results found in S3 results directory")
-            return False
-    except Exception as e:
-        logging.error(f"Error checking results: {str(e)}")
-        raise
-
-
-# DAG definition
+# DAG definition for processing sensor data
+# This pipeline reads raw sensor data, applies schema
+# definitions, processes it,
+# transforms it, and writes the output to an S3 bucket.
 with DAG(
-    "spark_processing_pipeline",
-    default_args=default_args,
-    description="Process data with temporary Spark cluster",
+    dag_id="sensor_data_processing_pipeline",
+    start_date=datetime(2024, 4, 1),
     schedule_interval="@daily",
-    start_date=days_ago(1),
-    tags=["buildall", "spark"],
     catchup=False,
+    default_args={"owner": "airflow", "retries": 1},
 ) as dag:
 
-    # Step 1: Create a temporary EMR Spark cluster
+    # Create a temporary EMR Spark cluster
     create_emr_cluster = EmrCreateJobFlowOperator(
         task_id="create_emr_cluster",
         job_flow_overrides=JOB_FLOW_OVERRIDES,
         aws_conn_id="aws_default",
+        emr_conn_id="emr_default",
+        region_name="eu-north-1",
     )
 
-    # Step 3: Submit Spark job for sensor data processing
-    SPARK_STEPS = [
-        {
-            "Name": "Process Sensor Data",
-            "ActionOnFailure": "CONTINUE",
-            "HadoopJarStep": {
-                "Jar": "command-runner.jar",
-                "Args": [
-                    "spark-submit",
-                    "--deploy-mode",
-                    "cluster",
-                    "--master",
-                    "yarn",
-                    "--conf",
-                    "spark.dynamicAllocation.enabled=true",
-                    "--conf",
-                    "spark.shuffle.service.enabled=true",
-                    "s3://buildall-airflow-assets/scripts/aggregate_data.py",
-                    "s3://buildall-airflow-assets/input/sensor_data/",
-                    "s3://buildall-airflow-assets/results/",
-                ],
+    # Add steps for pyspark execution
+    add_spark_step = EmrAddStepsOperator(
+        task_id="add_spark_step",
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
+        "['JobFlowId'] }}",
+        steps=[
+            {
+                "Name": "Run Spark Job",
+                "ActionOnFailure": "TERMINATE_CLUSTER",
+                "HadoopJarStep": {
+                    "Jar": "command-runner.jar",
+                    "Args": [
+                        "spark-submit",
+                        "--deploy-mode",
+                        "client",
+                        "s3://mwaa/pyspark/etl_job.py",  # spark job
+                    ],
+                },
             },
-        }
-    ]
-
-    submit_spark_job = EmrAddStepsOperator(
-        task_id="submit_spark_job",
-        job_flow_id=(
-            "{{ task_instance.xcom_pull(task_ids='create_emr_cluster') }}"
-        ),
+        ],
         aws_conn_id="aws_default",
-        steps=SPARK_STEPS,
+        emr_conn_id="emr_default",
+        region_name="eu-north-1",
     )
 
-    # Step 4: Wait for Spark job to complete
-    wait_for_spark_job = EmrStepSensor(
-        task_id="wait_for_spark_job",
-        job_flow_id=(
-            "{{ task_instance.xcom_pull(task_ids='create_emr_cluster') }}"
-        ),
-        step_id=(
-            "{{ task_instance.xcom_pull(task_ids='submit_spark_job')[0] }}"
-        ),
+    # add step to make sure all other step finishes
+    wait_for_spark_step = EmrStepSensor(
+        task_id="wait_for_spark_step",
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
+        "['JobFlowId'] }}",
+        step_id="{{ task_instance.xcom_pull(task_ids='add_spark_step')"
+        "['StepIds'][0] }}",
         aws_conn_id="aws_default",
+        region_name="eu-north-1",
     )
 
-    # Step 5: Store results
-    store_results_task = PythonOperator(
-        task_id="store_results",
-        python_callable=store_results,
-        provide_context=True,
-    )
-
-    # Step 6: Terminate the EMR cluster
+    # terminate the emr cluster
     terminate_emr_cluster = EmrTerminateJobFlowOperator(
         task_id="terminate_emr_cluster",
-        job_flow_id=(
-            "{{ task_instance.xcom_pull(task_ids='create_emr_cluster') }}"
-        ),
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
+        "['JobFlowId'] }}",
         aws_conn_id="aws_default",
+        region_name="eu-north-1",
+        dag=dag,
     )
 
-    # Set task dependencies
+    # Set task dependencies to define the sequence
+    # of execution for the pipeline. The tasks are
+    # organized in a way that ensures proper data flow
+    # and processing
     (
         create_emr_cluster
-        >> submit_spark_job
-        >> wait_for_spark_job
-        >> store_results_task
+        >> add_spark_step
+        >> wait_for_spark_step
         >> terminate_emr_cluster
     )
