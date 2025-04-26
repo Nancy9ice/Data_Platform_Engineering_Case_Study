@@ -101,7 +101,7 @@ jobs:
 
       - name: Sync Airflow files to the MWAA S3 bucket with the AWS CLI
         run: |
-          aws s3 sync ./dag/* s3://${{ secrets.BUCKET_NAME }}/dags/ --follow-symlinks --delete
-          aws s3 sync ./pyspark_job/* s3://${{ secrets.BUCKET_NAME }}/pyspark/ --follow-symlinks --delete
-          aws s3 cp ./requirements.txt s3://${{ secrets.BUCKET_NAME }}/requirements.txt --follow-symlinks
+          aws s3 sync ./dag/ s3://builditall-bucket/mwaa/dags/ --follow-symlinks --delete
+          aws s3 sync ./pyspark_job/ s3://builditall-bucket/mwaa/pyspark/ --follow-symlinks --delete
+          aws s3 cp ./requirements.txt s3://builditall-bucket/mwaa/requirements.txt --follow-symlinks
         working-directory: ./airflow
