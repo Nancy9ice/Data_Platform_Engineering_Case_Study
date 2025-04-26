@@ -53,10 +53,22 @@ variable "airflow_version" {
   description = "version for airflow"
 }
 
+variable "s3_bucket_name" {
+  type        = string
+  default     = "builditall_bucket"
+  description = "Bucket name for project"
+}
+
 variable "s3_dags_path" {
   type        = string
   default     = "mwaa/dags/"
   description = "DAG path in S3 for MWAA"
+}
+
+variable "pyspark_s3_path" {
+  type        = string
+  default     = "mwaa/pyspark/"
+  description = "pyspark path in S3 for MWAA"
 }
 
 variable "plugins_s3_path" {
