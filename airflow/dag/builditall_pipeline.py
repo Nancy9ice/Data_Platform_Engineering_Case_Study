@@ -1,5 +1,3 @@
-# airflow/dags/sensor_data_pipeline.py
-
 from datetime import datetime
 
 from airflow.operators.python import PythonOperator
@@ -15,22 +13,18 @@ from ..pyspark_job.etl_job import (
     write_data,
 )
 
-# Replace 'your_script_name' with the actual file name where you have your
-# functions
-
 # Input and Output Paths
 INPUT_PATH = "s3://your-bucket-name/input-data/"
 OUTPUT_PATH = "s3://your-bucket-name/processed-data/"
 
-# Global Spark Session (can be shared across tasks if you want)
-spark = None
+
 
 
 # DAG definition
 with DAG(
     dag_id="sensor_data_processing_pipeline",
     start_date=datetime(2024, 4, 1),
-    schedule_interval="@daily",  # or "@once" for manual runs
+    schedule_interval="@daily",
     catchup=False,
     default_args={"owner": "airflow", "retries": 1},
 ) as dag:
