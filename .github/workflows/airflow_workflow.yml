@@ -95,8 +95,7 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          audience: sts.amazonaws.com.cn
-          role-to-assume: arn:aws-cn:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Sync Airflow files to the MWAA S3 bucket with the AWS CLI
