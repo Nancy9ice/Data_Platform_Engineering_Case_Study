@@ -1,6 +1,12 @@
 from datetime import datetime
 
 from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.operators.emr import (
+    EmrAddStepsOperator,
+    EmrCreateJobFlowOperator,
+    EmrTerminateJobFlowOperator,
+)
+from airflow.providers.amazon.aws.sensors.emr import EmrStepSensor
 
 from airflow import DAG
 
@@ -12,14 +18,6 @@ from ..pyspark_job.etl_job import (
     transform_data,
     write_data,
 )
-
-
-from airflow.providers.amazon.aws.operators.emr import (
-    EmrAddStepsOperator,
-    EmrCreateJobFlowOperator,
-    EmrTerminateJobFlowOperator,
-)
-from airflow.providers.amazon.aws.sensors.emr import EmrStepSensor
 
 # INPUT_PATH: Path to the raw sensor data stored in an S3 bucket
 # OUTPUT_PATH: Path to store the processed and transformed data in an S3 bucket
