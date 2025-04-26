@@ -58,7 +58,11 @@ with DAG(
     dag_id="sensor_data_processing_pipeline",
     start_date=datetime(2024, 4, 1),
     catchup=False,
-    default_args={"owner": "airflow", "retries": 1, "schedule_interval": "@daily"},
+    default_args={
+        "owner": "airflow",
+        "retries": 1,
+        "schedule_interval": "@daily",
+    },
 ) as dag:
 
     # Create a temporary EMR Spark cluster
