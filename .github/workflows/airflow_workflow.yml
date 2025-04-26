@@ -82,6 +82,9 @@ jobs:
     needs: test_python
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
