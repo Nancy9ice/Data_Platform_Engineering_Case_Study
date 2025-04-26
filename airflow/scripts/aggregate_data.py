@@ -2,8 +2,6 @@
 import logging
 import sys
 
-from pyspark.sql import SparkSession
-
 from ..pyspark_job.etl_job import (
     create_spark_session,
     define_schema,

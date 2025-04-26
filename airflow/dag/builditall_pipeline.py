@@ -1,6 +1,5 @@
 # airflow/dags/sensor_data_pipeline.py
 
-import logging
 from datetime import datetime
 
 from airflow.operators.python import PythonOperator
