@@ -95,8 +95,6 @@ with DAG(
             },
         ],
         aws_conn_id="aws_default",
-        emr_conn_id="emr_default",
-        region_name="eu-north-1",
     )
 
     # add step to make sure all other step finishes
