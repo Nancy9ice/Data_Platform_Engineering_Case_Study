@@ -50,7 +50,6 @@ JOB_FLOW_OVERRIDES = {
 }
 
 
-
 # DAG definition for processing sensor data
 # This pipeline reads raw sensor data, applies schema
 # definitions, processes it,
@@ -87,7 +86,7 @@ with DAG(
                         "spark-submit",
                         "--deploy-mode",
                         "client",
-                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py" #spark job
+                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py",  # spark job
                     ],
                 },
             },
