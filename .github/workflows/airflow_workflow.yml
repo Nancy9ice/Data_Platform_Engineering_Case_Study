@@ -82,6 +82,9 @@ jobs:
     needs: test_python
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -93,9 +96,9 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Sync Airflow files to the MWAA S3 bucket with the AWS CLI
         run: |
-          aws s3 sync ./airflow/dags s3://${{ env.BUCKET_NAME }}/dags --follow-symlinks --delete
-          aws s3 cp ./requirements.txt s3://${{ env.BUCKET_NAME }}/requirements.txt --follow-symlinks
+          aws s3 sync ./airflow/dags s3://${{ secrets.BUCKET_NAME }}/dags --follow-symlinks --delete
+          aws s3 cp ./requirements.txt s3://${{ secrets.BUCKET_NAME }}/requirements.txt --follow-symlinks

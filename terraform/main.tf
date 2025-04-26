@@ -1,12 +1,6 @@
-# create random id for bucket namimg to ensure 
-# global bucket uniqueness
-resource "random_id" "bucket_suffix" {
-  byte_length = 4
-}
-
 # s3 bucket 
 resource "aws_s3_bucket" "builditall_secure_bucket" {
-  bucket        = "${var.project}-${var.env_prefix}-bucket-${random_id.bucket_suffix.hex}"
+  bucket        = var.s3_bucket_name
   force_destroy = false
 
   tags = {
@@ -31,7 +25,7 @@ resource "aws_s3_bucket_versioning" "builditall_bucket_versioning" {
 # use server-side encryption by default for all objects stored in the bucket if necessary.
 # Encryption is important because it protects sensitive data from unauthorized access, 
 # ensures privacy, and helps meet regulatory compliance requirements.
-resource "aws_s3_bucket_server_side_encryption_configuration" "buiditall_bucket_sse" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "builditall_bucket_sse" {
   bucket = aws_s3_bucket.builditall_secure_bucket.id
 
   rule {
@@ -65,19 +59,61 @@ resource "aws_s3_object" "mwaa_dags_folder" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
   key     = var.s3_dags_path
   content = ""
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket,
+  ]
 }
 
 resource "aws_s3_object" "mwaa_plugins_folder" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
   key     = var.plugins_s3_path
   content = ""
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket
+  ]
+}
+
+resource "aws_s3_object" "mwaa_spark_folder" {
+  bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
+  key     = var.pyspark_s3_path
+  content = ""
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket
+  ]
 }
 
 resource "aws_s3_object" "mwaa_requirements_file" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
   key     = var.requirements_s3_path
-  content = "pandas"
+  content = ""
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket
+  ]
 }
+
+resource "aws_s3_object" "mwaa_startup_script" {
+  bucket       = aws_s3_bucket.builditall_secure_bucket.bucket
+  key          = var.startup_script_s3_path
+  content      = <<-EOT
+    #!/bin/bash
+
+    # Wait for DB (retries with timeout)
+    timeout 300 bash -c 'until airflow db check; do sleep 10; done' || exit 1
+
+    # Set Airflow variables
+    airflow variables set ENVIRONMENT "${var.env_prefix}"
+    airflow variables set PROJECT_NAME "${var.project}"
+  EOT
+  content_type = "text/x-shellscript"
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket,
+    aws_iam_role.builditall_mwaa_role
+  ]
+}
+
 
 # more folders for data processing
 resource "aws_s3_object" "spark_raw_folder" {
@@ -111,18 +147,23 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
 
   source_bucket_arn = aws_s3_bucket.builditall_secure_bucket.arn
 
-  dag_s3_path          = var.s3_dags_path
-  plugins_s3_path      = var.plugins_s3_path
-  requirements_s3_path = var.requirements_s3_path
+  dag_s3_path            = var.s3_dags_path
+  plugins_s3_path        = var.plugins_s3_path
+  requirements_s3_path   = var.requirements_s3_path
+  startup_script_s3_path = var.startup_script_s3_path
 
   # airflow configs
   webserver_access_mode = "PUBLIC_ONLY"
   schedulers            = 3
+  min_workers           = 2
+  max_workers           = 10
   airflow_configuration_options = {
-    "core.default_task_retries"     = 5
-    "core.parallelism"              = 10
-    "celery.worker_autoscale"       = "10,10"
-    "webserver.default_ui_timezone" = "Europe/Stockholm"
+    "core.default_task_retries"           = 5
+    "core.parallelism"                    = 32
+    "celery.worker_autoscale"             = "10,10"
+    "webserver.default_ui_timezone"       = "Europe/Stockholm"
+    "scheduler.min_file_process_interval" = 30 # Reduce CPU usage
+    "logging.logging_level"               = "INFO"
   }
 
   logging_configuration {
@@ -153,8 +194,7 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
     aws_s3_object.mwaa_dags_folder,
     aws_s3_object.mwaa_plugins_folder,
     aws_s3_object.mwaa_requirements_file,
-    # module.vpc.nat_gateway_ids,
-    # module.vpc.private_subnets
+    aws_s3_object.mwaa_startup_script
   ]
 
   tags = {

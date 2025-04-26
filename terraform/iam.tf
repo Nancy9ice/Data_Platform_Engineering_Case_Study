@@ -136,6 +136,36 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
         ]
         Effect   = "Allow"
         Resource = "*"
+      },
+      {
+        Sid = "SecretsManagerAccess",
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        Effect   = "Allow",
+        Resource = "*"
+      },
+      {
+        Sid = "S3StartupScriptAccess",
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Effect = "Allow",
+        Resource = [
+          "${aws_s3_bucket.builditall_secure_bucket.arn}/${var.startup_script_s3_path}",
+          "${aws_s3_bucket.builditall_secure_bucket.arn}/${var.requirements_s3_path}"
+        ]
+      },
+      {
+        Sid = "ECSMetadataAccess",
+        Action = [
+          "ecs:DescribeTasks",
+          "ecs:ListTasks"
+        ],
+        Effect   = "Allow",
+        Resource = "*"
       }
     ]
   })
