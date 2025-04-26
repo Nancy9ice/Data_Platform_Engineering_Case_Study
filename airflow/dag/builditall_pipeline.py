@@ -105,7 +105,6 @@ with DAG(
         step_id="{{ task_instance.xcom_pull(task_ids='add_spark_step')"
         "['StepIds'][0] }}",
         aws_conn_id="aws_default",
-        region_name="eu-north-1",
     )
 
     # terminate the emr cluster
@@ -114,8 +113,6 @@ with DAG(
         job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
         "['JobFlowId'] }}",
         aws_conn_id="aws_default",
-        region_name="eu-north-1",
-        dag=dag,
     )
 
     # Set task dependencies to define the sequence
