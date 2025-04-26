@@ -6,7 +6,7 @@ def test_dag_has_start_date():
     Test that all DAGs have start_date either
     directly in the DAG or in default_args.
     """
-    dag_bag = DagBag(dag_folder="dags/", include_examples=False)
+    dag_bag = DagBag(dag_folder="dag/", include_examples=False)
 
     dag_without_start_date = []
 
