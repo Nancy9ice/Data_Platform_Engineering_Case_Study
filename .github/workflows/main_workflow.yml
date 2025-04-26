@@ -38,7 +38,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-      - name: Checkout the code
+      - name: Git Clone the Repository
         uses: actions/checkout@v4
 
       - name: Setup Terraform Environment

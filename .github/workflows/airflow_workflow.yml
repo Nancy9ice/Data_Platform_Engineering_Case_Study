@@ -30,7 +30,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-      - name: Checkout the code
+      - name: Git Clone the Repository
         uses: actions/checkout@v4
 
       - name: Setup Python environment
@@ -58,7 +58,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-      - name: Checkout the code
+      - name: Git Clone the Repository
         uses: actions/checkout@v4
 
       - name: Setup Python environment
@@ -76,3 +76,26 @@ jobs:
         run: |
           pytest tests/
         working-directory: ./airflow
+
+  # This defines the "deploy_airflow_code" job
+  deploy_airflow_code:
+    needs: test_python
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Git Clone the Repository
+        uses: actions/checkout@v4
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync Airflow files to the MWAA S3 bucket with the AWS CLI
+        run: |
+          aws s3 sync ./airflow/dags s3://${{ env.BUCKET_NAME }}/dags --follow-symlinks --delete
+          aws s3 cp ./requirements.txt s3://${{ env.BUCKET_NAME }}/requirements.txt --follow-symlinks
