@@ -86,7 +86,7 @@ with DAG(
                         "spark-submit",
                         "--deploy-mode",
                         "client",
-                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py",  # spark job
+                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py",
                     ],
                 },
             },
