@@ -1,0 +1,104 @@
+# This is the workflow to build, and test airflow code to be merged to the main branch. And also deploy the code to production
+# P.S. There should be a workflow for the staging environment too but we didn't make provision for that
+
+name: Airflow_Code_Deployment
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+    push:
+      branches: [ "main" ]
+      paths:
+        - 'airflow/**/*'
+    pull_request:
+      branches: [ "main" ]
+      paths:
+      - 'airflow/**/*'
+    workflow_dispatch:
+      inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+
+jobs:
+  # This defines the "build_python" job
+  build_python:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Git Clone the Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./requirements.txt
+
+      # Lints the Python scripts
+      - name: Lint Python Scripts
+        run: |
+          flake8 .
+        working-directory: ./airflow
+
+  # This defines the "test_python" job
+  test_python:
+    needs: build_python
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Git Clone the Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./requirements.txt
+
+      # Lints the Python scripts
+      - name: Run Tests
+        run: |
+          pytest tests/
+        working-directory: ./airflow
+
+  # This defines the "deploy_airflow_code" job
+  deploy_airflow_code:
+    needs: test_python
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Git Clone the Repository
+        uses: actions/checkout@v4
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Sync Airflow files to the MWAA S3 bucket with the AWS CLI
+        run: |
+          aws s3 sync ./airflow/dags s3://${{ secrets.BUCKET_NAME }}/dags --follow-symlinks --delete
+          aws s3 cp ./requirements.txt s3://${{ secrets.BUCKET_NAME }}/requirements.txt --follow-symlinks
