@@ -49,9 +49,6 @@ JOB_FLOW_OVERRIDES = {
     ],
 }
 
-# s3://builditall-bucket/mwaa/dags/
-# s3://builditall-bucket/mwaa/pyspark/
-# s3://builditall-bucket/builditall/logs/
 
 
 # DAG definition for processing sensor data
