@@ -41,13 +41,17 @@ JOB_FLOW_OVERRIDES = {
     },
     "JobFlowRole": "EMR_EC2_DefaultRole",
     "ServiceRole": "EMR_DefaultRole",
-    "LogUri": "s3://builditall/logs/",
+    "LogUri": "s3://builditall-bucket/builditall/logs/",
     "VisibleToAllUsers": True,
     "Tags": [
         {"Key": "Project", "Value": "BuildAll"},
         {"Key": "Environment", "Value": "Production"},
     ],
 }
+
+# s3://builditall-bucket/mwaa/dags/
+# s3://builditall-bucket/mwaa/pyspark/
+# s3://builditall-bucket/builditall/logs/
 
 
 # DAG definition for processing sensor data
@@ -86,7 +90,7 @@ with DAG(
                         "spark-submit",
                         "--deploy-mode",
                         "client",
-                        "s3://mwaa/pyspark/etl_job.py",  # spark job
+                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py" #spark job
                     ],
                 },
             },
