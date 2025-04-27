@@ -48,6 +48,22 @@ JOB_FLOW_OVERRIDES = {
 }
 
 
+DATA_PROCESSING_STEPS=[
+            {
+                "Name": "Run Spark Job",
+                "ActionOnFailure": "TERMINATE_CLUSTER",
+                "HadoopJarStep": {
+                    "Jar": "command-runner.jar",
+                    "Args": [
+                        "spark-submit",
+                        "--deploy-mode",
+                        "client",
+                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py",
+                    ],
+                },
+            },
+        ]
+
 # DAG definition for processing sensor data
 # This pipeline reads raw sensor data, applies schema
 # definitions, processes it,
@@ -79,22 +95,8 @@ with DAG(
     add_spark_step = EmrAddStepsOperator(
         task_id="add_spark_step",
         job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
-        "['JobFlowId'] }}",
-        steps=[
-            {
-                "Name": "Run Spark Job",
-                "ActionOnFailure": "TERMINATE_CLUSTER",
-                "HadoopJarStep": {
-                    "Jar": "command-runner.jar",
-                    "Args": [
-                        "spark-submit",
-                        "--deploy-mode",
-                        "client",
-                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py",
-                    ],
-                },
-            },
-        ],
+        "key='return_value') }}"
+        steps=DATA_PROCESSING_STEPS,
         aws_conn_id="aws_default",
     )
 
@@ -102,9 +104,9 @@ with DAG(
     wait_for_spark_step = EmrStepSensor(
         task_id="wait_for_spark_step",
         job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
-        "['JobFlowId'] }}",
+        "key='return_value') }}"
         step_id="{{ task_instance.xcom_pull(task_ids='add_spark_step')"
-        "['StepIds'][0] }}",
+        "key='return_value')[0] }}"
         aws_conn_id="aws_default",
     )
 
@@ -112,7 +114,7 @@ with DAG(
     terminate_emr_cluster = EmrTerminateJobFlowOperator(
         task_id="terminate_emr_cluster",
         job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
-        "['JobFlowId'] }}",
+        "key='return_value') }}",
         aws_conn_id="aws_default",
     )
 
