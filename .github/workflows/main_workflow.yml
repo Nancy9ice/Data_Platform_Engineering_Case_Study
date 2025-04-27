@@ -90,5 +90,5 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -input=false -auto-approve
         working-directory: ./terraform/
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
         continue-on-error: false
