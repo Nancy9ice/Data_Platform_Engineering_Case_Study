@@ -74,19 +74,19 @@ jobs:
         if: github.event_name == 'pull_request'
 
   # This defines the "deploy" job
-  # deploy:
-    # The type of runner that the job will run on
-    # runs-on: ubuntu-22.04
-    # needs: build_terraform
+  deploy:
+    The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+    needs: build_terraform
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    # steps:
+    Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
       # Provisions the resources via Terraform
-      # - name: Terraform Apply
-      #   run: terraform apply -input=false -auto-approve
-        # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        # continue-on-error: false
+      - name: Terraform Apply
+        run: terraform apply -input=false -auto-approve
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        continue-on-error: false
 
-        # - name: Terraform Destroy
-        # if: failure()
-        # run: terraform destroy -auto-approve
+      - name: Terraform Destroy
+        if: failure()
+        run: terraform destroy -auto-approve
