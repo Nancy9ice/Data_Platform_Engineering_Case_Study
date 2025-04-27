@@ -65,8 +65,6 @@ To avoid rebuilding the pipelines due to unrelated code changes, our CI-CD pipel
 
 This pipeline is only triggered when any changes were made to the Terraform folder only. It lints the terraform scripts, Validates and Format the terraform scripts, shows a preview of the resources that would be provisioned by Terraform and deployed. 
 
-If there was a failure in any steps, resources that might have been provisioned before the failure would be destroyed. This avoids the sustained existence of resources that cannot be used.
-
 - **The Airflow CI-CD Deployment Pipeline**:
 
 This deployment pipeline runs only when changes are made to the Airflow folder containing our dags and pyspark scripts. This deployment pipeline involves the linting of the scripts, code testing using some basic unit tests by pytest that checks for some expectations in the dags. When these tests pass, the dag, pyspark, and requirements folder is redeployed to the s3 bucket so that the AMWAA service syncs any changes made.
