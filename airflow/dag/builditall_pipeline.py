@@ -37,8 +37,8 @@ JOB_FLOW_OVERRIDES = {
         "KeepJobFlowAliveWhenNoSteps": True,
         "TerminationProtected": False,
     },
-    "JobFlowRole": "EMR_EC2_DefaultRole",
-    "ServiceRole": "EMR_DefaultRole",
+    "JobFlowRole": "AmazonEMR-InstanceProfile-20250405T131154",
+    "ServiceRole": "AmazonEMR-InstanceProfile-20250405T131154",
     "LogUri": "s3://builditall-bucket/builditall/logs/",
     "VisibleToAllUsers": True,
     "Tags": [
