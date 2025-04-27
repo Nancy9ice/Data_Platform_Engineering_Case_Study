@@ -119,3 +119,48 @@ def write_data(transformed_data, output_path):
         output_path
     )
     logging.info("Transformed data written successfully")
+
+
+def main():
+    """Main function to orchestrate the ETL process."""
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(_name_)
+
+    try:
+        logger.info("Starting ETL process for sensor data")
+
+        # Create Spark session
+        spark = create_spark_session()
+
+        # Define schema
+        schema = define_schema()
+
+        # Input and output paths
+        input_path = "s3://emr-datalake/input-folder/raw/*"
+        output_path = "s3://emr-datalake/output-folder/processed-data/"
+
+        # Read raw data
+        raw_data = read_raw_data(spark, input_path)
+
+        # Process raw data
+        processed_data = process_raw_data(raw_data, schema)
+
+        # Transform data
+        transformed_data = transform_data(processed_data)
+
+        # Write transformed data
+        write_data(transformed_data, output_path)
+
+        logger.info("ETL process completed successfully!")
+
+    except Exception as e:
+        logger.error(f"Error in ETL process: {str(e)}")
+        raise e
+
+    finally:
+        logger.info("Stopping Spark session")
+        spark.stop()
+
+
+if __name__ == "_main_":
+    main()
