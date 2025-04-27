@@ -89,7 +89,7 @@ Having these two different deployments ensured greater control over deployment a
 - **Apache Airflow**: Initial setup can be complex and requires careful configuration.
 - **Terraform**: Requires familiarity with infrastructure-as-code concepts for effective use.
 - **GitHub Actions**: May involve a learning curve for setting up complex workflows.
-- **AWS EMR**: Cost considerations for extensive usage.
+- **AWS EMR**: Cost considerations for extensive usage
 - **Amazon S3**: Requires management of storage costs as data volume increases.
 - **CloudWatch**: Can incur additional costs for extensive monitoring.
 
