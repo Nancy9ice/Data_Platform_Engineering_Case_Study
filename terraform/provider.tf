@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/template"
       version = "~> 2.2.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = ">= 3.1"
+    }
   }
 
   cloud {
@@ -34,3 +38,5 @@ provider "aws" {
   access_key = var.aws_access_key_id
   secret_key = var.aws_secret_access_key
 }
+
+provider "null" {}

@@ -93,28 +93,6 @@ resource "aws_s3_object" "mwaa_requirements_file" {
   ]
 }
 
-resource "aws_s3_object" "mwaa_startup_script" {
-  bucket       = aws_s3_bucket.builditall_secure_bucket.bucket
-  key          = var.startup_script_s3_path
-  content      = <<-EOT
-    #!/bin/bash
-
-    # Wait for DB (retries with timeout)
-    timeout 300 bash -c 'until airflow db check; do sleep 10; done' || exit 1
-
-    # Set Airflow variables
-    airflow variables set ENVIRONMENT "${var.env_prefix}"
-    airflow variables set PROJECT_NAME "${var.project}"
-  EOT
-  content_type = "text/x-shellscript"
-
-  depends_on = [
-    aws_s3_bucket.builditall_secure_bucket,
-    aws_iam_role.builditall_mwaa_role
-  ]
-}
-
-
 # more folders for data processing
 resource "aws_s3_object" "spark_raw_folder" {
   bucket  = aws_s3_bucket.builditall_secure_bucket.bucket
@@ -203,4 +181,41 @@ resource "aws_mwaa_environment" "builditall_mwaa_env" {
     Terraform   = "true"
     Environment = var.env_prefix
   }
+}
+
+resource "aws_s3_object" "mwaa_startup_script" {
+  bucket       = aws_s3_bucket.builditall_secure_bucket.bucket
+  key          = var.startup_script_s3_path
+  content      = <<-EOT
+    #!/bin/bash
+
+    echo "Starting MWAA startup script..."
+
+    # Wait for Airflow database
+    timeout 300 bash -c 'until airflow db check; do sleep 10; done' || exit 1
+
+    # Set Airflow Variables
+    airflow variables set ENVIRONMENT "${var.env_prefix}"
+    airflow variables set PROJECT_NAME "${var.project}"
+
+    # Set AWS Connection
+    echo "Setting up AWS Connection..."
+    airflow connections add aws_default \
+      --conn-type aws \
+      --conn-login "${var.aws_access_key_id}" \
+      --conn-password "${var.aws_secret_access_key}" \
+
+    # Set EMR Connection
+    echo "Setting up EMR Connection..."
+    airflow connections add emr_default \
+      --conn-type aws \
+
+    echo "Startup script completed!"
+  EOT
+  content_type = "text/x-shellscript"
+
+  depends_on = [
+    aws_s3_bucket.builditall_secure_bucket,
+    aws_iam_role.builditall_mwaa_role
+  ]
 }
