@@ -1,17 +1,13 @@
 from datetime import datetime
 
-from airflow.operators.python import PythonOperator
+from airflow import DAG
+# from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.emr import (
     EmrAddStepsOperator,
     EmrCreateJobFlowOperator,
     EmrTerminateJobFlowOperator,
 )
 from airflow.providers.amazon.aws.sensors.emr import EmrStepSensor
-
-from airflow import DAG
-
-from dag.pyspark_job.etl_job import upload_file_from_url_to_s3
-
 
 JOB_FLOW_OVERRIDES = {
     "Name": "BuildAll-Temporary-Spark-Cluster",
@@ -61,7 +57,7 @@ DATA_PROCESSING_STEPS = [
             ],
         },
     },
-        ]
+]
 
 # DAG definition for processing sensor data
 # This pipeline reads raw sensor data, applies schema
@@ -77,10 +73,6 @@ with DAG(
         "schedule_interval": "@daily",
     },
 ) as dag:
-    upload_file_from_url_to_s3_task = PythonOperator(
-        task_id="upload_file_from_url_to_s3_task",
-        python_callable=upload_file_from_url_to_s3,
-    )
 
     # Create a temporary EMR Spark cluster
     create_emr_cluster = EmrCreateJobFlowOperator(
@@ -130,8 +122,7 @@ with DAG(
     # organized in a way that ensures proper data flow
     # and processing
     (
-        upload_file_from_url_to_s3_task
-        >> create_emr_cluster
+        create_emr_cluster
         >> add_spark_step
         >> wait_for_spark_step
         >> terminate_emr_cluster
