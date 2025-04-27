@@ -189,7 +189,7 @@ resource "aws_s3_object" "mwaa_startup_script" {
   content      = <<-EOT
     #!/bin/bash
 
-    echo "Starting MWAA startup script..."
+    echo "Starting MWAA startup script......."
 
     # Wait for Airflow database
     timeout 300 bash -c 'until airflow db check; do sleep 10; done' || exit 1
