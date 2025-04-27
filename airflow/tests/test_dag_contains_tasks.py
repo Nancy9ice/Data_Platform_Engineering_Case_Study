@@ -7,7 +7,7 @@ def test_dags_contains_tasks():
     """
 
     # load the dags
-    dag_bag = DagBag(dag_folder="dags/", include_examples=False)
+    dag_bag = DagBag(dag_folder="dag/", include_examples=False)
 
     # create empty list for empty dags
     empty_dags = []
