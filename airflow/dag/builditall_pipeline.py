@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python.PythonOperator import PythonOperator
 from airflow.providers.amazon.aws.operators.emr import (
     EmrAddStepsOperator,
     EmrCreateJobFlowOperator,
