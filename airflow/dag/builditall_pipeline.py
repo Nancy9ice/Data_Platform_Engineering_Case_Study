@@ -10,7 +10,7 @@ from airflow.providers.amazon.aws.sensors.emr import EmrStepSensor
 
 from airflow import DAG
 
-# from ..pyspark_job.etl_job import upload_file_from_url_to_s3
+from dag.pyspark_job.etl_job import upload_file_from_url_to_s3
 
 
 JOB_FLOW_OVERRIDES = {
@@ -77,10 +77,10 @@ with DAG(
         "schedule_interval": "@daily",
     },
 ) as dag:
-    # upload_file_from_url_to_s3_task = PythonOperator(
-    #     task_id="upload_file_from_url_to_s3_task",
-    #     python_callable=upload_file_from_url_to_s3,
-    # )
+    upload_file_from_url_to_s3_task = PythonOperator(
+        task_id="upload_file_from_url_to_s3_task",
+        python_callable=upload_file_from_url_to_s3,
+    )
 
     # Create a temporary EMR Spark cluster
     create_emr_cluster = EmrCreateJobFlowOperator(
@@ -130,8 +130,8 @@ with DAG(
     # organized in a way that ensures proper data flow
     # and processing
     (
-        # upload_file_from_url_to_s3_task
-        create_emr_cluster
+        upload_file_from_url_to_s3_task
+        >> create_emr_cluster
         >> add_spark_step
         >> wait_for_spark_step
         >> terminate_emr_cluster
