@@ -39,7 +39,7 @@ CloudWatch was employed for monitoring purposes to track the performance of the 
 The provisioned S3 bucket held different folders and files associated with the other resources provisioned on AWS including the cloudwatch metrics log files, AMWAA dags folder, AMWAA plugins folder, folder containing the pyspark scripts, AMWAA requirements file, and the folder containing the raw and processed forms of the dataset.This was also provisioned using Terraform.
 
 ### 3. Data Handling with Amazon S3
- Raw text data files in a zipped folder was downloaded programmatically from a [public link] and stored in S3 bucket.
+ Raw text data files in a zipped folder was downloaded programmatically from a [public link](https://archive.ics.uci.edu/static/public/507/wisdm+smartphone+and+smartwatch+activity+and+biometrics+dataset.zip) and stored in S3 bucket.
 
  ### 4. Data Processing with AWS EMR and PySpark
 
