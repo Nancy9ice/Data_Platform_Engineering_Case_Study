@@ -105,7 +105,7 @@ with DAG(
     wait_for_spark_step = EmrStepSensor(
         task_id="wait_for_spark_step",
         job_flow_id=(
-            "{{ task_instance.xcom_pull(task_ids='add_spark_step', "
+            "{{ task_instance.xcom_pull(task_ids='create_emr_cluster', "
             "key='return_value') }}"
         ),
         step_id=(
