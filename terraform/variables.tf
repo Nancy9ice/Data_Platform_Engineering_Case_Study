@@ -55,7 +55,7 @@ variable "airflow_version" {
 
 variable "s3_bucket_name" {
   type        = string
-  default     = "builditall_bucket"
+  default     = "builditall-bucket"
   description = "Bucket name for project"
 }
 

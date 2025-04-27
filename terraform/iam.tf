@@ -30,20 +30,21 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid = "S3Access"
+        Sid    = "S3Access"
+        Effect = "Allow"
         Action = [
           "s3:ListBucket",
           "s3:GetObject",
           "s3:PutObject"
         ]
-        Effect = "Allow"
         Resource = [
           aws_s3_bucket.builditall_secure_bucket.arn,
           "${aws_s3_bucket.builditall_secure_bucket.arn}/*"
         ]
       },
       {
-        Sid = "EMRAccess"
+        Sid    = "EMRAccess"
+        Effect = "Allow"
         Action = [
           "elasticmapreduce:RunJobFlow",
           "elasticmapreduce:TerminateJobFlows",
@@ -54,17 +55,17 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
           "elasticmapreduce:ListSteps",
           "elasticmapreduce:ListInstanceGroups"
         ]
-        Effect   = "Allow"
         Resource = "*"
       },
       {
         Sid      = "AllowPassRoleForEMR"
-        Action   = "iam:PassRole"
         Effect   = "Allow"
+        Action   = "iam:PassRole"
         Resource = "*"
       },
       {
-        Sid = "CloudWatchLogsAccess"
+        Sid    = "CloudWatchLogsAccess"
+        Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
@@ -72,14 +73,14 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
           "logs:GetLogEvents",
           "logs:DescribeLogStreams"
         ]
-        Effect = "Allow"
         Resource = [
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:airflow-${var.project}-${var.env_prefix}-mwaa-environment-*",
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:airflow-${var.project}-${var.env_prefix}-mwaa-environment-*:*"
         ]
       },
       {
-        Sid = "MWAABasicPermissions"
+        Sid    = "MWAABasicPermissions"
+        Effect = "Allow"
         Action = [
           "kms:Decrypt",
           "kms:DescribeKey",
@@ -92,79 +93,98 @@ resource "aws_iam_role_policy" "builditall_mwaa_policy" {
           "ecs:DescribeTaskDefinition",
           "ecs:ListTasks"
         ]
-        Effect   = "Allow"
         Resource = "*"
       },
       {
-        Sid = "EC2NetworkInterfacePermissions"
+        Sid    = "EC2InstancePermissions"
+        Effect = "Allow"
         Action = [
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:CreateNetworkInterface",
-          "ec2:CreateNetworkInterfacePermission",
-          "ec2:DeleteNetworkInterface",
-          "ec2:DeleteNetworkInterfacePermission",
+          "ec2:RunInstances",
+          "ec2:TerminateInstances",
           "ec2:DescribeInstances",
-          "ec2:AttachNetworkInterface"
+          "ec2:DescribeKeyPairs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeVpcs",
+          "ec2:CreateSecurityGroup",
+          "ec2:AuthorizeSecurityGroupIngress"
         ]
+        Resource = "*"
+      },
+      {
+        Sid      = "GetAccountPublicAccessBlock"
         Effect   = "Allow"
+        Action   = "s3:GetAccountPublicAccessBlock"
         Resource = "*"
       },
       {
-        Sid    = "GetAccountPublicAccessBlock"
-        Effect = "Allow"
-        Action = [
-          "s3:GetAccountPublicAccessBlock"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "GetBucketPublicAccessBlock"
-        Effect = "Allow"
-        Action = [
-          "s3:GetBucketPublicAccessBlock"
-        ]
+        Sid      = "GetBucketPublicAccessBlock"
+        Effect   = "Allow"
+        Action   = "s3:GetBucketPublicAccessBlock"
         Resource = aws_s3_bucket.builditall_secure_bucket.arn
       },
       {
-        Sid = "SQSAccess"
+        Sid    = "SQSAccessLimited"
+        Effect = "Allow"
         Action = [
-          "sqs:SendMessage",
-          "sqs:ReceiveMessage",
+          "sqs:ChangeMessageVisibility",
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes",
-          "sqs:ListQueues"
+          "sqs:GetQueueUrl",
+          "sqs:ReceiveMessage",
+          "sqs:SendMessage"
         ]
-        Effect   = "Allow"
-        Resource = "*"
+        Resource = "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:airflow-celery-*"
       },
       {
-        Sid = "SecretsManagerAccess",
+        Sid    = "KMSSQSAccess"
+        Effect = "Allow"
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:Decrypt",
+          "kms:Encrypt"
+        ]
+        Resource = "*"
+        Condition = {
+          "StringEquals" = {
+            "kms:ViaService" = "sqs.${var.aws_region}.amazonaws.com"
+          }
+        }
+      },
+      {
+        Sid    = "SecretsManagerAccess"
+        Effect = "Allow"
         Action = [
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret"
-        ],
-        Effect   = "Allow",
+        ]
         Resource = "*"
       },
       {
-        Sid = "S3StartupScriptAccess",
+        Sid    = "S3StartupScriptAccess"
+        Effect = "Allow"
         Action = [
           "s3:GetObject",
           "s3:ListBucket"
-        ],
-        Effect = "Allow",
+        ]
         Resource = [
           "${aws_s3_bucket.builditall_secure_bucket.arn}/${var.startup_script_s3_path}",
           "${aws_s3_bucket.builditall_secure_bucket.arn}/${var.requirements_s3_path}"
         ]
       },
       {
-        Sid = "ECSMetadataAccess",
+        Sid      = "PublishAirflowMetrics"
+        Effect   = "Allow"
+        Action   = "airflow:PublishMetrics"
+        Resource = "arn:aws:airflow:${var.aws_region}:${data.aws_caller_identity.current.account_id}:environment/${var.project}-${var.env_prefix}-mwaa-environment"
+      },
+      {
+        Sid    = "SESSendEmailPermissions"
+        Effect = "Allow"
         Action = [
-          "ecs:DescribeTasks",
-          "ecs:ListTasks"
-        ],
-        Effect   = "Allow",
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
         Resource = "*"
       }
     ]
@@ -194,4 +214,53 @@ resource "aws_sns_topic_policy" "s3_sns_policy" {
       }
     ]
   })
+}
+
+
+# spark default roles 
+resource "aws_iam_role" "emr_service_role" {
+  name = "EMR_DefaultRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "elasticmapreduce.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach EMR service role policy
+resource "aws_iam_role_policy_attachment" "emr_service_role_attachment" {
+  role       = aws_iam_role.emr_service_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEMRServicePolicy_v2"
+}
+
+
+resource "aws_iam_role" "emr_ec2_role" {
+  name = "EMR_EC2_DefaultRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach EMR EC2 role policy
+resource "aws_iam_role_policy_attachment" "emr_ec2_role_attachment" {
+  role       = aws_iam_role.emr_ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role"
 }
