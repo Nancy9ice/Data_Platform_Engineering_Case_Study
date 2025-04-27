@@ -12,11 +12,6 @@ from airflow import DAG
 
 # from ..pyspark_job.etl_job import upload_file_from_url_to_s3
 
-# INPUT_PATH: Path to the raw sensor data stored in an S3 bucket
-# OUTPUT_PATH: Path to store the processed and transformed data in an S3 bucket
-INPUT_PATH = "s3://your-bucket-name/input-data/"
-OUTPUT_PATH = "s3://your-bucket-name/processed-data/"
-
 
 JOB_FLOW_OVERRIDES = {
     "Name": "BuildAll-Temporary-Spark-Cluster",
@@ -78,7 +73,6 @@ with DAG(
         job_flow_overrides=JOB_FLOW_OVERRIDES,
         aws_conn_id="aws_default",
         emr_conn_id="emr_default",
-        region_name="eu-north-1",
     )
 
     # Add steps for pyspark execution
