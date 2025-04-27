@@ -85,9 +85,11 @@ jobs:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
       - name: Git Clone the Repository
         uses: actions/checkout@v4
-        
-      - name: Show files
-        run: tree
+
+      # Initialize the Terraform Project
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: ./terraform/
         
       # Provisions the resources via Terraform
       - name: Terraform Apply
