@@ -1,0 +1,92 @@
+# Local Terraform configuration files
+*.tfstate
+*.tfstate.backup
+
+# Crash log files
+crash.log
+
+# Terraform variable files containing sensitive data
+*.tfvars
+*.tfvars.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore Terraform provider plugins and modules
+.terraform/
+.terraform.lock.hcl
+
+# Ignore sensitive information generated during runtime
+*.auto.tfvars
+
+# Ignore plan files
+*.tfplan
+
+# Ignore backups and temporary files
+*.bak
+*.swp
+*.tmp
+*.log
+
+test
+
+# Ansible-specific files
+*.retry
+*.vault  # Vault files that might store sensitive information
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.bak
+*.orig
+*.rej
+
+# SSH and security-related files
+*.pem
+*.key
+*.crt
+*.csr
+id_rsa
+id_rsa.pub
+
+# Python virtual environments
+venv/
+.env/
+env/
+
+# Cache and compiled files
+__pycache__
+*.py[cod]
+.pytest_cache
+
+# YAML linting files
+*.yaml~
+*.yml~
+
+# Inventory files (if sensitive or dynamic)
+inventory
+inventory/*.ini
+inventory/*.yml
+
+# Role dependencies
+roles/
+roles/*/.git
+roles/*/.retry
+roles/*/.tar.gz
+
+# Collections-related files
+collections/
+collections/.cache
+collections/ansible_collections/*/*/.git
+collections/ansible_collections/*/*/.retry
+collections/ansible_collections/*/*/*.log
+
+# python
+venv
+
+# act bin folder for testing workflows
+*bin
+
+.DS_Store

@@ -1,0 +1,91 @@
+# This is the workflow to build, and test code to be merged to the main branch. And also deploy the code to production
+# P.S. There should be a workflow for the staging environment too but we didn't make provision for that
+
+name: Terraform_Deployment
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+    push:
+      branches: [ "main" ]
+      paths:
+        - 'terraform/**/*'
+    pull_request:
+      branches: [ "main" ]
+      paths:
+      - 'terraform/**/*'
+    workflow_dispatch:
+      inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+        secrets:
+          TF_API_TOKEN:
+            required: true
+          TF_CLOUD_ORGANIZATION:
+            required: true
+
+jobs:
+  # This defines the "build_terraform" job
+  build_terraform:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+    env:
+      TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Git Clone the Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform Environment
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.4"
+          terraform_wrapper: false  
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      # Lints the Terraform scripts
+      - name: Lint the Terraform project files
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          tflint --init
+        working-directory: ./terraform/
+
+      # Initialize the Terraform Project
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: ./terraform/
+
+      # Format and Validate the Terraform scripts
+      - name: Terraform Format and Validate
+        run: |
+          terraform fmt -check -recursive  
+          terraform validate         
+        working-directory: ./terraform/      
+
+      # Preview changes to be made to the cloud environment
+      - name: Terraform Plan
+        run: terraform plan -no-color -input=false
+        working-directory: ./terraform/
+        if: github.event_name == 'pull_request'
+
+  # This defines the "deploy" job
+  # deploy:
+    # The type of runner that the job will run on
+    # runs-on: ubuntu-22.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    # steps:
+      # Provisions the resources via Terraform
+      # - name: Terraform Apply
+      #   run: terraform apply -input=false -auto-approve
+        # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        # continue-on-error: false
+
+        # - name: Terraform Destroy
+        # if: failure()
+        # run: terraform destroy -auto-approve
