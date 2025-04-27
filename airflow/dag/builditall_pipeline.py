@@ -47,21 +47,20 @@ JOB_FLOW_OVERRIDES = {
     ],
 }
 
-
-DATA_PROCESSING_STEPS=[
-            {
-                "Name": "Run Spark Job",
-                "ActionOnFailure": "TERMINATE_CLUSTER",
-                "HadoopJarStep": {
-                    "Jar": "command-runner.jar",
-                    "Args": [
-                        "spark-submit",
-                        "--deploy-mode",
-                        "client",
-                        "s3://builditall-bucket/mwaa/pyspark/etl_job.py",
-                    ],
-                },
-            },
+DATA_PROCESSING_STEPS = [
+    {
+        "Name": "Run Spark Job",
+        "ActionOnFailure": "TERMINATE_CLUSTER",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args": [
+                "spark-submit",
+                "--deploy-mode",
+                "client",
+                "s3://builditall-bucket/mwaa/pyspark/etl_job.py",
+            ],
+        },
+    },
         ]
 
 # DAG definition for processing sensor data
