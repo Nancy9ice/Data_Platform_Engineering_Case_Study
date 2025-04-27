@@ -75,11 +75,11 @@ jobs:
 
   # This defines the "deploy" job
   deploy:
-    The type of runner that the job will run on
+    # The type of runner that the job will run on
     runs-on: ubuntu-22.04
     needs: build_terraform
 
-    Steps represent a sequence of tasks that will be executed as part of the job
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Provisions the resources via Terraform
       - name: Terraform Apply
