@@ -93,7 +93,7 @@ Having these two different deployments ensured greater control over deployment a
 - **Amazon S3**: Requires management of storage costs as data volume increases.
 - **CloudWatch**: Can incur additional costs for extensive monitoring.
 
-## Folder Structure
+## Repository Structure
 
 ```bash
 ├── .github/  # Holds the github workflow yaml files and pull_request template
@@ -108,6 +108,53 @@ Having these two different deployments ensured greater control over deployment a
 
 ├── fix-flake.sh # Fixes any code quality issues in files in the airflow folder
 ```
+
+## Environment Setup
+
+Before starting, ensure you have:
+
+* An AWS account 
+* VS Code 
+* Terraform v1.10.4+ installed
+* AWS CLI installed and configured
+* Airflow (for local testing)
+
+**Clone the Repository**:
+   ```bash
+   git clone https://github.com/Nancy9ice/Data_Platform_Engineering_Case_Study
+   ```
+**Create branch for development**
+```bash
+git checkout -b /your-branch-name
+   ```
+**Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+**Configure AWS CLI with your credentials**
+   ```bash
+   aws configure
+   ```
+
+**Create necessary S3 buckets**
+```bash
+aws s3 mb s3://your-project-airflow-dags
+aws s3 mb s3://your-project-raw-data
+aws s3 mb s3://your-project-processed-data
+   ```
+
+**Data Preparation**
+```bash
+#Create a directory
+mkdir -p data/raw
+
+# Download sample data (replace with your source)
+wget -O data/raw/dataset.zip [https://archive.ics.uci.edu/static/public/507/wisdm+smartphone+and+smartwatch+activity+and+biometrics+dataset.zip]
+
+# Upload data to S3
+aws s3 sync data/raw/ s3://your-project-raw-data/
+   ```
 
 ## Impact on Business Problem
 
