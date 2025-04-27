@@ -93,8 +93,10 @@ with DAG(
     # Add steps for pyspark execution
     add_spark_step = EmrAddStepsOperator(
         task_id="add_spark_step",
-        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
-        "key='return_value') }}",
+        job_flow_id=(
+            "{{ task_instance.xcom_pull(task_ids='create_emr_cluster', "
+            "key='return_value') }}"
+        ),
         steps=DATA_PROCESSING_STEPS,
         aws_conn_id="aws_default",
     )
@@ -102,18 +104,24 @@ with DAG(
     # add step to make sure all other step finishes
     wait_for_spark_step = EmrStepSensor(
         task_id="wait_for_spark_step",
-        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
-        "key='return_value') }}",
-        step_id="{{ task_instance.xcom_pull(task_ids='add_spark_step')"
-        "key='return_value')[0] }}",
+        job_flow_id=(
+            "{{ task_instance.xcom_pull(task_ids='add_spark_step', "
+            "key='return_value') }}"
+        ),
+        step_id=(
+            "{{ task_instance.xcom_pull(task_ids='add_spark_step', "
+            "key='return_value')[0] }}"
+        ),
         aws_conn_id="aws_default",
     )
 
     # terminate the emr cluster
     terminate_emr_cluster = EmrTerminateJobFlowOperator(
         task_id="terminate_emr_cluster",
-        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster')"
-        "key='return_value') }}",
+        job_flow_id=(
+            "{{ task_instance.xcom_pull(task_ids='create_emr_cluster', "
+            "key='return_value') }}"
+        ),
         aws_conn_id="aws_default",
     )
 
