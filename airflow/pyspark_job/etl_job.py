@@ -124,7 +124,7 @@ def write_data(transformed_data, output_path):
 def main():
     """Main function to orchestrate the ETL process."""
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(_name_)
+    logger = logging.getLogger(__name__)
 
     try:
         logger.info("Starting ETL process for sensor data")
