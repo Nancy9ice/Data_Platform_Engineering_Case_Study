@@ -87,7 +87,3 @@ jobs:
         working-directory: ./terraform/
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         continue-on-error: false
-
-      - name: Terraform Destroy
-        if: failure()
-        run: terraform destroy -auto-approve
