@@ -83,7 +83,7 @@ jobs:
     steps:
 
       - name: Show files
-        run: ls -R
+        run: tree
         working-directory: ./terraform/
         
       # Provisions the resources via Terraform
