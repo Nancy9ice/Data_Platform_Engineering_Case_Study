@@ -84,7 +84,6 @@ jobs:
 
       - name: Show files
         run: tree
-        working-directory: ./terraform/
         
       # Provisions the resources via Terraform
       - name: Terraform Apply
