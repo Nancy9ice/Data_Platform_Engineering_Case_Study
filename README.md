@@ -120,41 +120,31 @@ Before starting, ensure you have:
 * Airflow (for local testing)
 
 **Clone the Repository**:
-   ```bash
+```bash
    git clone https://github.com/Nancy9ice/Data_Platform_Engineering_Case_Study
-   ```
-**Create branch for development**
-```bash
-git checkout -b /your-branch-name
-   ```
-**Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+```
 
-**Configure AWS CLI with your credentials**
-   ```bash
-   aws configure
-   ```
-
-**Create necessary S3 buckets**
-```bash
-aws s3 mb s3://your-project-airflow-dags
-aws s3 mb s3://your-project-raw-data
-aws s3 mb s3://your-project-processed-data
-   ```
-
-**Data Preparation**
-```bash
-#Create a directory
-mkdir -p data/raw
-
-# Download sample data (replace with your source)
+**Download sample data (replace with your source)**:
 wget -O data/raw/dataset.zip [https://archive.ics.uci.edu/static/public/507/wisdm+smartphone+and+smartwatch+activity+and+biometrics+dataset.zip]
 
-# Upload data to S3
-aws s3 sync data/raw/ s3://your-project-raw-data/
-   ```
+**Upload data to S3**:
+```bash
+aws s3 sync data/raw/ s3://builditall-bucket/builditall/raw_data/
+```
+
+**Provide the following as Repository Secrets for your CI-CD Actions**:
+```bash
+AWS_ACCESS_KEY
+AWS_ACCOUNT_ID
+AWS_REGION
+AWS_ROLE
+AWS_SECRET_ACCESS_KEY
+BUCKET_NAME
+TF_API_TOKEN
+TF_CLOUD_ORGANIZATION
+```
+
+**Then Trigger the CI-CD Workflow**
 
 ## Impact on Business Problem
 
